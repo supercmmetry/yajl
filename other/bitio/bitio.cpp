@@ -1,5 +1,4 @@
 #include "bitio.h"
-#include <hzip/utils/boost_utils.h>
 
 using namespace bitio;
 
@@ -31,13 +30,13 @@ void bitio_stream::close() {
     if (file != nullptr) fclose(file);
 }
 
-HZIP_FORCED_INLINE void bitio_stream::load_buffer() {
+inline void bitio_stream::load_buffer() {
     current_buffer_length = fread(byte_buffer, 1, buffer_size, file);
     eof = current_buffer_length == 0;
     byte_index = 0;
 }
 
-HZIP_FORCED_INLINE void bitio_stream::load_byte() {
+inline void bitio_stream::load_byte() {
     if (eof)
         bit_buffer = 0;
     if (byte_index == current_buffer_length)
@@ -45,7 +44,7 @@ HZIP_FORCED_INLINE void bitio_stream::load_byte() {
     bit_buffer = byte_buffer[byte_index++];
 }
 
-HZIP_FORCED_INLINE void bitio_stream::wflush() {
+inline void bitio_stream::wflush() {
     fwrite(byte_buffer, 1, buffer_size, file);
 }
 
@@ -141,7 +140,15 @@ bool bitio_stream::is_eof() {
 }
 
 uint64_t bitio_stream::get_file_size() {
-    return hzboost::get_file_size(filename);
+    FILE *tmp = fopen(filename.c_str(), "rb");
+    uint64_t count = 0;
+    char *tmp_ptr = new char[1];
+    while (fread(tmp_ptr, 1, 1, tmp) != 0) {
+        count++;
+    }
+    free(tmp_ptr);
+    fclose(tmp);
+    return count;
 }
 
 

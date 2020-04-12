@@ -1,6 +1,8 @@
 #ifndef YAJL_MARKERS_H
 #define YAJL_MARKERS_H
 
+#include <cstdint>
+
 namespace MARKERS {
     inline bool is_marker(uint16_t val) {
         return val & 0xFF00;

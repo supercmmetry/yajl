@@ -4,7 +4,7 @@
 using namespace bitio;
 
 bitio_byte_dumper::bitio_byte_dumper(char *filename, bool append) {
-    data = new uint8_t[HZ_BITIO_BUFFER_SIZE];
+    data = new uint8_t[BITIO_BUFFER_SIZE];
     this->filename = filename;
     multiplier = 1;
     size = 0;
@@ -13,9 +13,9 @@ bitio_byte_dumper::bitio_byte_dumper(char *filename, bool append) {
 }
 
 void bitio_byte_dumper::write_byte(uint8_t byte) {
-    if (size == multiplier * HZ_BITIO_BUFFER_SIZE) {
+    if (size == multiplier * BITIO_BUFFER_SIZE) {
         multiplier++;
-        data = (uint8_t*)realloc(data, HZ_BITIO_BUFFER_SIZE * multiplier * sizeof(uint8_t));
+        data = (uint8_t*)realloc(data, BITIO_BUFFER_SIZE * multiplier * sizeof(uint8_t));
     }
     data[size++] = byte;
 }
