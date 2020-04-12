@@ -1,4 +1,0 @@
-/home/supercmmetry/Projects/yajl/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/supercmmetry/Projects/yajl/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/supercmmetry/Projects/yajl/cmake-build-debug/CMakeFiles/zyajl_demo.dir
-/home/supercmmetry/Projects/yajl/cmake-build-debug/CMakeFiles/yajl.dir

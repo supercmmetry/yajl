@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/zyajl_demo.dir/tests/demo.cpp.o  -o zyajl_demo  libyajl.a 

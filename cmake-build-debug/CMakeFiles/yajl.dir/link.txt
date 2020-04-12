@@ -1,2 +1,0 @@
-/usr/bin/ar qc libyajl.a  CMakeFiles/yajl.dir/src/yajl.cpp.o
-/usr/bin/ranlib libyajl.a

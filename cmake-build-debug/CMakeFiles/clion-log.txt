@@ -1,4 +1,0 @@
-/home/supercmmetry/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/201.6668.10/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/supercmmetry/Projects/yajl
--- Configuring done
--- Generating done
--- Build files have been written to: /home/supercmmetry/Projects/yajl/cmake-build-debug
