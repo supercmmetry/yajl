@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/supercmmetry/Projects/yajl/src/yajl.cpp
+yajl.h
+/home/supercmmetry/Projects/yajl/src/yajl.h
+
+/home/supercmmetry/Projects/yajl/src/yajl.h
+iostream
+-
+
