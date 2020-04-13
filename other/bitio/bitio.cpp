@@ -153,4 +153,3 @@ uint64_t bitio_stream::get_file_size() {
 
 
 
-

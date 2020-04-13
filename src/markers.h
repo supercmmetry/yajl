@@ -5,7 +5,7 @@
 
 namespace MARKERS {
     inline bool is_marker(uint16_t val) {
-        return val & 0xFF00;
+        return (val >> 8) == 0xFF;
     }
 
     enum MARKER {

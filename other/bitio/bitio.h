@@ -65,7 +65,7 @@ namespace bitio {
 
     public:
 
-        bitio_stream(std::string filename, access_enum op, uint64_t buffer_size);
+        bitio_stream(std::string filename, access_enum op, uint64_t buffer_size=BITIO_BUFFER_SIZE);
 
         void skip(uint64_t n);
 

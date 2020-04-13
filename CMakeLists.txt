@@ -4,11 +4,12 @@ project(yajl)
 set(CMAKE_CXX_STANDARD 20)
 
 include_directories(src)
+include_directories(other)
 
 add_subdirectory(other)
 
 add_library(yajl STATIC
-        src/yajl.h src/markers.h)
+        src/yajl.h src/markers.h src/image.h src/image.cpp src/quantization.h)
 
 target_compile_features(yajl PUBLIC cxx_std_20)
 set_target_properties(yajl PROPERTIES LINKER_LANGUAGE CXX)
