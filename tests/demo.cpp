@@ -4,10 +4,10 @@
 
 int main() {
     std::string filename = "/home/supercmmetry/Pictures/supercmmetry.jpg";
-    YAJLImage image;
+    YAJLImage image(false);
     image.set_src(filename);
     image.scan_markers();
-    std::cout << image.app_data << std::endl;
+    std::cout << image.get_app_data() << std::endl;
 
     return 0;
 }

@@ -18,7 +18,7 @@ public:
 };
 
 
-class YAJLImage : YAJLImageDescriptor {
+class YAJLImage : public YAJLImageDescriptor {
     bitio::bitio_stream *bstream;
     bool use_minimal_scan;
 public:
