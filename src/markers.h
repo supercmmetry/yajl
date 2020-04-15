@@ -3,29 +3,29 @@
 
 #include <cstdint>
 
-namespace MARKERS {
+namespace markers {
     inline bool is_marker(uint16_t val) {
         return (val >> 8) == 0xFF;
     }
 
     enum MARKER {
-        SOF0 = 0xFFC0,
-        SOF1 = 0xFFC1,
-        SOF2 = 0xFFC2,
-        SOF3 = 0xFFC3,
-        SOF5 = 0xFFC5,
-        SOF6 = 0xFFC6,
-        SOF7 = 0xFFC7,
-        JPG = 0xFFC8,
-        SOF9 = 0xFFC9,
-        SOF10 = 0xFFCA,
-        SOF11 = 0xFFCB,
-        SOF13 = 0xFFCD,
-        SOF14 = 0xFFCE,
-        SOF15 = 0xFFCF,
-        DHT = 0xFFC4,
-        DAC = 0xFFCC,
-        RST0 = 0xFFD0,
+        SOF0 = 0xFFC0,  // Baseline DCT (Huffman)
+        SOF1 = 0xFFC1,  // Extended sequential DCT (Huffman)
+        SOF2 = 0xFFC2,  // Progressive DCT (Huffman)
+        SOF3 = 0xFFC3,  // Lossless (sequential) (Huffman)
+        SOF5 = 0xFFC5,  // Differential sequential DCT (Huffman)
+        SOF6 = 0xFFC6,  // Differential progressive DCT (Huffman)
+        SOF7 = 0xFFC7,  // Differential lossless (sequential) (Huffman)
+        JPG = 0xFFC8,   // Reserved for JPEG extensions (Arithmetic)
+        SOF9 = 0xFFC9,  // Extended sequential DCT (Arithmetic)
+        SOF10 = 0xFFCA, // Progressive DCT (Arithmetic)
+        SOF11 = 0xFFCB, // Lossless (sequential) (Arithmetic)
+        SOF13 = 0xFFCD, // Differential sequential DCT (Arithmetic)
+        SOF14 = 0xFFCE, // Differential progressive DCT (Arithmetic)
+        SOF15 = 0xFFCF, // Differential lossless (sequential) (Arithmetic)
+        DHT = 0xFFC4,   // Define Huffman table(s)
+        DAC = 0xFFCC,   // Define arithmetic coding conditioning(s)
+        RST0 = 0xFFD0,  // Restart with modulo 8 count “m”
         RST1 = 0xFFD1,
         RST2 = 0xFFD2,
         RST3 = 0xFFD3,
@@ -33,15 +33,15 @@ namespace MARKERS {
         RST5 = 0xFFD5,
         RST6 = 0xFFD6,
         RST7 = 0xFFD7,
-        SOI = 0xFFD8,
-        EOI = 0xFFD9,
-        SOS = 0xFFDA,
-        DQT = 0xFFDB,
-        DNL = 0xFFDC,
-        DRI = 0xFFDD,
-        DHP = 0xFFDE,
-        EXP = 0xFFDF,
-        APP0 = 0xFFE0,
+        SOI = 0xFFD8,   // Start of image
+        EOI = 0xFFD9,   // End of image
+        SOS = 0xFFDA,   // Start of scan
+        DQT = 0xFFDB,   // Define quantization table(s)
+        DNL = 0xFFDC,   // Define number of lines
+        DRI = 0xFFDD,   // Define restart interval
+        DHP = 0xFFDE,   // Define hierarchical progression
+        EXP = 0xFFDF,   // Expand reference component(s)
+        APP0 = 0xFFE0,  // Reserved for application segments
         APP1 = 0xFFE1,
         APP2 = 0xFFE2,
         APP3 = 0xFFE3,
@@ -57,7 +57,7 @@ namespace MARKERS {
         APP13 = 0xFFED,
         APP14 = 0xFFEE,
         APP15 = 0xFFEF,
-        JPG0 = 0xFFF0,
+        JPG0 = 0xFFF0,  // Reserved for JPEG extensions
         JPG1 = 0xFFF1,
         JPG2 = 0xFFF2,
         JPG3 = 0xFFF3,
@@ -71,8 +71,8 @@ namespace MARKERS {
         JPG11 = 0xFFFB,
         JPG12 = 0xFFFC,
         JPG13 = 0xFFFD,
-        COM = 0xFFFE,
-        TEM = 0xFF01,
+        COM = 0xFFFE, // Comment
+        TEM = 0xFF01, // For temporary private use in arithmetic coding
     };
 }
 

@@ -9,9 +9,15 @@ include_directories(other)
 add_subdirectory(other)
 
 add_library(yajl STATIC
-        src/yajl.h src/markers.h src/image.h src/image.cpp src/quantization.h)
+        src/yajl.h
+        src/markers.h
+        src/image.h
+        src/image.cpp
+        src/qtable.h
+        src/htables.h)
 
 target_compile_features(yajl PUBLIC cxx_std_20)
+add_compile_definitions(DEBUG)
 set_target_properties(yajl PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(yajl PUBLIC bitio)
 

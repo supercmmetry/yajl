@@ -1,4 +1,0 @@
-#ifndef YAJL_QUANTIZATION_H
-#define YAJL_QUANTIZATION_H
-
-#endif
