@@ -1,6 +1,7 @@
 #include <cassert>
 #include "image.h"
 #include "qtable.h"
+#include "frame.h"
 #include "htables.h"
 #include "markers.h"
 
@@ -16,9 +17,40 @@ void YAJLImage::scan_markers() {
         return;
     }
     bool continue_scan = true;
-    while (continue_scan) {
+    while (continue_scan && !bstream->is_eof()) {
         uint16_t marker = bstream->read(0x10);
         assert(markers::is_marker(marker));
+
+        // we handle SOF markers separately.
+        if (markers::is_sof_marker(marker)) {
+            // We create a FrameHeader and fill it with data.
+            uint16_t length = bstream->read(0x10);
+            // remove non-recurring lengths.
+            length -= 8;
+
+            header.frame_header_data.sof = marker;
+            header.frame_header_data.precision = bstream->read(0x8);
+            header.frame_header_data.nlines = bstream->read(0x10);
+            header.frame_header_data.nsamples_per_line = bstream->read(0x10);
+            header.frame_header_data.ncomponents = bstream->read(0x8);
+
+            while (length > 0) {
+                YAJLFrameHeaderSpec spec{};
+                spec.component_id = bstream->read(0x8);
+                spec.horizontal_sampling_factor = bstream->read(0x4);
+                spec.vertical_sampling_factor = bstream->read(0x4);
+                spec.qtable_dest = bstream->read(0x8);
+
+                header.frame_header_specs.push_back(spec);
+                length -= 3;
+            }
+
+            continue;
+        }
+
+
+        // channel APPn to APP0
+        marker = markers::is_app_marker(marker) ? markers::APP0 : marker;
 
         switch (marker) {
             case markers::APP0: {
@@ -78,16 +110,10 @@ void YAJLImage::scan_markers() {
                 }
                 break;
             }
-            default: {
-#ifdef DEBUG
-                printf("Unhandled marker: %X\n", marker);
-#endif
-                continue_scan = false;
-            }
         }
     }
-
 }
+
 
 YAJLImage::YAJLImage(bool _use_minimal_scan) {
     bstream = nullptr;

@@ -4,6 +4,7 @@
 #include <string>
 #include <bitio/bitio.h>
 #include "qtable.h"
+#include "frame.h"
 
 
 class YAJLImageDescriptor {
@@ -16,13 +17,16 @@ protected:
     void push_com_data(char* com_data);
     void add_qtable(YAJLQTable table, int index);
 public:
+    YAJLFrameHeader header;
     char* get_app_data(uint32_t index = 0);
     char* get_comment(uint32_t index = 0);
     YAJLQTable get_qtable(uint8_t index);
 };
 
 
+
 class YAJLImage : public YAJLImageDescriptor {
+private:
     bitio::bitio_stream *bstream;
     bool use_minimal_scan;
 public:

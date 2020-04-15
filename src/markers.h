@@ -8,6 +8,15 @@ namespace markers {
         return (val >> 8) == 0xFF;
     }
 
+    inline bool is_app_marker(uint16_t val) {
+        return (val >> 4) == 0xFFE;
+    }
+
+    inline bool is_sof_marker(uint16_t val) {
+        return ((val >> 4) == 0xFFC) && (val != 0xFFC8);
+    }
+
+
     enum MARKER {
         SOF0 = 0xFFC0,  // Baseline DCT (Huffman)
         SOF1 = 0xFFC1,  // Extended sequential DCT (Huffman)

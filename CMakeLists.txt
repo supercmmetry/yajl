@@ -14,7 +14,7 @@ add_library(yajl STATIC
         src/image.h
         src/image.cpp
         src/qtable.h
-        src/htables.h)
+        src/htables.h src/frame.h)
 
 target_compile_features(yajl PUBLIC cxx_std_20)
 add_compile_definitions(DEBUG)
