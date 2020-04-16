@@ -5,17 +5,21 @@
 #include <bitio/bitio.h>
 #include "qtable.h"
 #include "frame.h"
+#include "entropy_tables.h"
 
 
 class YAJLImageDescriptor {
 private:
     std::vector<char*> ds_app_data;
     std::vector<char*> ds_comments;
-    YAJLQTable tables[4];
+    YAJLQTable qtables[4];
+    YAJLEntropyTable etables[4];
+
 protected:
     void push_app_data(char* app_data);
     void push_com_data(char* com_data);
-    void add_qtable(YAJLQTable table, int index);
+    void add_qtable(YAJLQTable table, uint8_t index);
+    void add_etable(YAJLEntropyTable table, uint8_t index);
 public:
     YAJLFrameHeader header;
     char* get_app_data(uint32_t index = 0);

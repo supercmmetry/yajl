@@ -1,7 +1,6 @@
 #include <string>
 #include <bitio/bitio.h>
 #include <yajl.h>
-#include <htables.h>
 
 int main() {
     std::string filename = "/home/supercmmetry/Pictures/supercmmetry.jpg";

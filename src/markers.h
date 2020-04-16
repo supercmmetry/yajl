@@ -13,7 +13,7 @@ namespace markers {
     }
 
     inline bool is_sof_marker(uint16_t val) {
-        return ((val >> 4) == 0xFFC) && (val != 0xFFC8);
+        return ((val >> 4) == 0xFFC) && (val != 0xFFC8) && (val != 0xFFC4) && (val != 0xFFCC);
     }
 
 

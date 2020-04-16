@@ -20,10 +20,10 @@ void YAJLImage::scan_markers() {
     while (continue_scan && !bstream->is_eof()) {
         uint16_t marker = bstream->read(0x10);
         assert(markers::is_marker(marker));
+        printf("marker found: %X\n", marker);
 
         // we handle SOF markers separately.
         if (markers::is_sof_marker(marker)) {
-            // We create a FrameHeader and fill it with data.
             uint16_t length = bstream->read(0x10);
             // remove non-recurring lengths.
             length -= 8;
@@ -47,7 +47,6 @@ void YAJLImage::scan_markers() {
 
             continue;
         }
-
 
         // channel APPn to APP0
         marker = markers::is_app_marker(marker) ? markers::APP0 : marker;
@@ -110,47 +109,100 @@ void YAJLImage::scan_markers() {
                 }
                 break;
             }
+            case markers::DHT: {
+                uint16_t length = bstream->read(0x10);
+                length -= 2;
+                while (length > 0) {
+                    YAJLEntropyTable etable{};
+                    etable.set_marker(marker);
+                    etable.huffman_table = new YAJLHuffmanTable;
+                    etable.huffman_table->table_class = bstream->read(0x4);
+                    etable.huffman_table->table_dest = bstream->read(0x4);
+                    for (int i = 0; i < 16; i++) {
+                        etable.huffman_table->ncodes[i] = bstream->read(0x8);
+                    }
+
+                    length -= 17;
+
+                    for (int i = 0; i < 16; i++) {
+                        etable.huffman_table->var_codes[i] = new uint8_t[etable.huffman_table->ncodes[i]];
+                        for (int j = 0; j < etable.huffman_table->ncodes[i]; j++) {
+                            etable.huffman_table->var_codes[i][j] = bstream->read(0x8);
+                        }
+                        length -= etable.huffman_table->ncodes[i];
+                    }
+                    add_etable(etable, etable.huffman_table->table_dest);
+                }
+                break;
+
+            }
+            case markers::DAC: {
+                uint16_t length = bstream->read(0x10);
+                length -= 2;
+                while (length > 0) {
+                    YAJLEntropyTable etable{};
+                    etable.set_marker(marker);
+                    etable.arithmetic_table = new YAJLArithmeticTable;
+                    etable.arithmetic_table->table_class = bstream->read(0x4);
+                    etable.arithmetic_table->table_dest = bstream->read(0x4);
+                    etable.arithmetic_table->cs_value = bstream->read(0x8);
+                    add_etable(etable, etable.huffman_table->table_dest);
+                    length -= 2;
+                }
+                default: {
+                    continue_scan = false;
+#ifdef DEBUG
+                    printf("Unhandled marker: %X\n", marker);
+#endif
+                }
+            }
+
         }
     }
-}
 
 
-YAJLImage::YAJLImage(bool _use_minimal_scan) {
-    bstream = nullptr;
-    use_minimal_scan = _use_minimal_scan;
-}
-
-
-char *YAJLImageDescriptor::get_app_data(uint32_t index) {
-    if (index < ds_app_data.size()) {
-        return ds_app_data[index];
-    } else {
-        return nullptr;
+    YAJLImage::YAJLImage(bool
+    _use_minimal_scan) {
+        bstream = nullptr;
+        use_minimal_scan = _use_minimal_scan;
     }
-}
 
-void YAJLImageDescriptor::push_app_data(char *app_data) {
-    ds_app_data.push_back(app_data);
-}
 
-void YAJLImageDescriptor::push_com_data(char *com_data) {
-    ds_comments.push_back(com_data);
-}
-
-char *YAJLImageDescriptor::get_comment(uint32_t index) {
-    if (index < ds_comments.size()) {
-        return ds_comments[index];
-    } else {
-        return nullptr;
+    char *YAJLImageDescriptor::get_app_data(uint32_t index) {
+        if (index < ds_app_data.size()) {
+            return ds_app_data[index];
+        } else {
+            return nullptr;
+        }
     }
-}
 
-void YAJLImageDescriptor::add_qtable(YAJLQTable table, int index) {
-    assert(index < 4);
-    tables[index] = table;
-}
+    void YAJLImageDescriptor::push_app_data(char *app_data) {
+        ds_app_data.push_back(app_data);
+    }
 
-YAJLQTable YAJLImageDescriptor::get_qtable(uint8_t index) {
-    assert(index < 4);
-    return tables[index];
-}
+    void YAJLImageDescriptor::push_com_data(char *com_data) {
+        ds_comments.push_back(com_data);
+    }
+
+    char *YAJLImageDescriptor::get_comment(uint32_t index) {
+        if (index < ds_comments.size()) {
+            return ds_comments[index];
+        } else {
+            return nullptr;
+        }
+    }
+
+    void YAJLImageDescriptor::add_qtable(YAJLQTable table, uint8_t index) {
+        assert(index < 4);
+        qtables[index] = table;
+    }
+
+    YAJLQTable YAJLImageDescriptor::get_qtable(uint8_t index) {
+        assert(index < 4);
+        return qtables[index];
+    }
+
+    void YAJLImageDescriptor::add_etable(YAJLEntropyTable table, uint8_t index) {
+        assert(index < 4);
+        etables[index] = table;
+    }
