@@ -21,7 +21,8 @@ protected:
     void add_qtable(YAJLQTable table, uint8_t index);
     void add_etable(YAJLEntropyTable table, uint8_t index);
 public:
-    YAJLFrameHeader header;
+    YAJLFrameHeader frame_header;
+    YAJLScanHeader scan_header;
     char* get_app_data(uint32_t index = 0);
     char* get_comment(uint32_t index = 0);
     YAJLQTable get_qtable(uint8_t index);

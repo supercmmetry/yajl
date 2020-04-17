@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <vector>
 #include <bitio/bitio.h>
+#include "qtable.h"
+#include "entropy_tables.h"
+
+
 
 struct YAJLFrameHeaderSpec {
     uint8_t component_id;
@@ -33,13 +37,35 @@ struct YAJLFrameHeaderData {
 };
 
 struct YAJLFrameHeader {
-    YAJLFrameHeaderData frame_header_data;
-    std::vector<YAJLFrameHeaderSpec> frame_header_specs;
+    YAJLFrameHeaderData data;
+    std::vector<YAJLFrameHeaderSpec> specs;
 };
 
+struct YAJLScanHeaderSpec {
+    uint8_t component_selector;
+    uint8_t dc_selector;
+    uint8_t ac_selector;
+
+    YAJLScanHeaderSpec() {
+        // empty-constructor
+    }
+
+    YAJLScanHeaderSpec(bitio::bitio_stream *bstream);
+};
 
 struct YAJLScanHeader {
+    uint8_t ncomponents;
+    std::vector<YAJLScanHeaderSpec> specs;
+    uint8_t select_start;
+    uint8_t select_end;
+    uint8_t ah;
+    uint8_t al;
 
+    YAJLScanHeader() {
+        // empty-constructor
+    }
+
+    YAJLScanHeader(bitio::bitio_stream *bstream);
 };
 
 #endif

@@ -28,11 +28,11 @@ void YAJLImage::scan_markers() {
             // remove non-recurring lengths.
             length -= 8;
 
-            header.frame_header_data = YAJLFrameHeaderData(marker, bstream);
+            frame_header.data = YAJLFrameHeaderData(marker, bstream);
 
             while (length > 0) {
                 YAJLFrameHeaderSpec spec(bstream);
-                header.frame_header_specs.push_back(spec);
+                frame_header.specs.push_back(spec);
                 length -= 3;
             }
 
@@ -47,7 +47,7 @@ void YAJLImage::scan_markers() {
                 if (!use_minimal_scan) {
                     // param-length followed by application data.
                     uint16_t length = bstream->read(0x10);
-                    // exlude Lp from length
+                    // exclude Lp from length
                     length -= 2;
                     auto *app_data = new char[length];
                     for (int i = 0; i < length; i++) {
@@ -123,6 +123,16 @@ void YAJLImage::scan_markers() {
                     add_etable(etable, etable.arithmetic_table->table_dest);
                     length -= 2;
                 }
+            }
+            case markers::SOS: {
+                scan_header = YAJLScanHeader(bstream);
+                break;
+            }
+            case markers::DNL: {
+                // ignore the length param as we know the absolute length of NL
+                bstream->read(0x10);
+                frame_header.data.nlines = bstream->read(0x10);
+                break;
             }
             default: {
                 continue_scan = false;
