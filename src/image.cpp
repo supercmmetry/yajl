@@ -28,19 +28,10 @@ void YAJLImage::scan_markers() {
             // remove non-recurring lengths.
             length -= 8;
 
-            header.frame_header_data.sof = marker;
-            header.frame_header_data.precision = bstream->read(0x8);
-            header.frame_header_data.nlines = bstream->read(0x10);
-            header.frame_header_data.nsamples_per_line = bstream->read(0x10);
-            header.frame_header_data.ncomponents = bstream->read(0x8);
+            header.frame_header_data = YAJLFrameHeaderData(marker, bstream);
 
             while (length > 0) {
-                YAJLFrameHeaderSpec spec{};
-                spec.component_id = bstream->read(0x8);
-                spec.horizontal_sampling_factor = bstream->read(0x4);
-                spec.vertical_sampling_factor = bstream->read(0x4);
-                spec.qtable_dest = bstream->read(0x8);
-
+                YAJLFrameHeaderSpec spec(bstream);
                 header.frame_header_specs.push_back(spec);
                 length -= 3;
             }
@@ -97,13 +88,8 @@ void YAJLImage::scan_markers() {
                 // exclude size of Lq which is 2 bytes
                 seg_len -= 2;
                 while (seg_len > 0) {
-                    YAJLQTable table{};
-                    table.precision = bstream->read(0x4);
-                    table.dest_id = bstream->read(0x4);
+                    YAJLQTable table(bstream);
                     uint8_t qk_size = table.precision == 0 ? 8 : 16;
-                    for (int i : scanorders::ZZ) {
-                        table.coeffs[i] = bstream->read(qk_size);
-                    }
                     add_qtable(table, table.dest_id);
                     seg_len -= 1 + (qk_size << 3);
                 }
@@ -115,22 +101,13 @@ void YAJLImage::scan_markers() {
                 while (length > 0) {
                     YAJLEntropyTable etable{};
                     etable.set_marker(marker);
-                    etable.huffman_table = new YAJLHuffmanTable;
-                    etable.huffman_table->table_class = bstream->read(0x4);
-                    etable.huffman_table->table_dest = bstream->read(0x4);
-                    for (int i = 0; i < 16; i++) {
-                        etable.huffman_table->ncodes[i] = bstream->read(0x8);
-                    }
+                    etable.huffman_table = new YAJLHuffmanTable(bstream);
 
                     length -= 17;
-
                     for (int i = 0; i < 16; i++) {
-                        etable.huffman_table->var_codes[i] = new uint8_t[etable.huffman_table->ncodes[i]];
-                        for (int j = 0; j < etable.huffman_table->ncodes[i]; j++) {
-                            etable.huffman_table->var_codes[i][j] = bstream->read(0x8);
-                        }
                         length -= etable.huffman_table->ncodes[i];
                     }
+
                     add_etable(etable, etable.huffman_table->table_dest);
                 }
                 break;
@@ -142,67 +119,65 @@ void YAJLImage::scan_markers() {
                 while (length > 0) {
                     YAJLEntropyTable etable{};
                     etable.set_marker(marker);
-                    etable.arithmetic_table = new YAJLArithmeticTable;
-                    etable.arithmetic_table->table_class = bstream->read(0x4);
-                    etable.arithmetic_table->table_dest = bstream->read(0x4);
-                    etable.arithmetic_table->cs_value = bstream->read(0x8);
-                    add_etable(etable, etable.huffman_table->table_dest);
+                    etable.arithmetic_table = new YAJLArithmeticTable(bstream);
+                    add_etable(etable, etable.arithmetic_table->table_dest);
                     length -= 2;
                 }
-                default: {
-                    continue_scan = false;
-#ifdef DEBUG
-                    printf("Unhandled marker: %X\n", marker);
-#endif
-                }
             }
-
+            default: {
+                continue_scan = false;
+#ifdef DEBUG
+                printf("Unhandled marker: %X\n", marker);
+#endif
+            }
         }
+
     }
+}
 
 
-    YAJLImage::YAJLImage(bool
-    _use_minimal_scan) {
-        bstream = nullptr;
-        use_minimal_scan = _use_minimal_scan;
+YAJLImage::YAJLImage(bool
+                     _use_minimal_scan) {
+    bstream = nullptr;
+    use_minimal_scan = _use_minimal_scan;
+}
+
+
+char *YAJLImageDescriptor::get_app_data(uint32_t index) {
+    if (index < ds_app_data.size()) {
+        return ds_app_data[index];
+    } else {
+        return nullptr;
     }
+}
 
+void YAJLImageDescriptor::push_app_data(char *app_data) {
+    ds_app_data.push_back(app_data);
+}
 
-    char *YAJLImageDescriptor::get_app_data(uint32_t index) {
-        if (index < ds_app_data.size()) {
-            return ds_app_data[index];
-        } else {
-            return nullptr;
-        }
+void YAJLImageDescriptor::push_com_data(char *com_data) {
+    ds_comments.push_back(com_data);
+}
+
+char *YAJLImageDescriptor::get_comment(uint32_t index) {
+    if (index < ds_comments.size()) {
+        return ds_comments[index];
+    } else {
+        return nullptr;
     }
+}
 
-    void YAJLImageDescriptor::push_app_data(char *app_data) {
-        ds_app_data.push_back(app_data);
-    }
+void YAJLImageDescriptor::add_qtable(YAJLQTable table, uint8_t index) {
+    assert(index < 4);
+    qtables[index] = table;
+}
 
-    void YAJLImageDescriptor::push_com_data(char *com_data) {
-        ds_comments.push_back(com_data);
-    }
+YAJLQTable YAJLImageDescriptor::get_qtable(uint8_t index) {
+    assert(index < 4);
+    return qtables[index];
+}
 
-    char *YAJLImageDescriptor::get_comment(uint32_t index) {
-        if (index < ds_comments.size()) {
-            return ds_comments[index];
-        } else {
-            return nullptr;
-        }
-    }
-
-    void YAJLImageDescriptor::add_qtable(YAJLQTable table, uint8_t index) {
-        assert(index < 4);
-        qtables[index] = table;
-    }
-
-    YAJLQTable YAJLImageDescriptor::get_qtable(uint8_t index) {
-        assert(index < 4);
-        return qtables[index];
-    }
-
-    void YAJLImageDescriptor::add_etable(YAJLEntropyTable table, uint8_t index) {
-        assert(index < 4);
-        etables[index] = table;
-    }
+void YAJLImageDescriptor::add_etable(YAJLEntropyTable table, uint8_t index) {
+    assert(index < 4);
+    etables[index] = table;
+}
