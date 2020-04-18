@@ -8,7 +8,7 @@ YAJLHuffmanTable::YAJLHuffmanTable(bitio::bitio_stream *bstream) {
     }
 
     for (int i = 0; i < 16; i++) {
-        var_codes[i] = new uint8_t[ncodes[i]];
+        var_codes[i] = new u8[ncodes[i]];
         for (int j = 0; j < ncodes[i]; j++) {
             var_codes[i][j] = bstream->read(0x8);
         }

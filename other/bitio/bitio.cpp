@@ -85,8 +85,14 @@ uint64_t bitio_stream::read(uint64_t n) {
 }
 
 void bitio_stream::skip(uint64_t n) {
-    for (int i = 0; i < n; i++) {
-        read(1);
+    while (n > 0) {
+        if (n > 0x40) {
+            read(0x40);
+            n -= 0x40;
+        } else {
+            read(n);
+            n = 0;
+        }
     }
 }
 

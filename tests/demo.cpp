@@ -7,6 +7,6 @@ int main() {
     YAJLImage image(false);
     image.set_src(filename);
     image.scan_markers();
-    std::cout << "Application Data: " << image.get_app_data() << std::endl;
+
     return 0;
 }

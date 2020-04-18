@@ -6,14 +6,16 @@
 #include <bitio/bitio.h>
 #include "qtable.h"
 #include "entropy_tables.h"
+#include "types.h"
+#include "misc.h"
 
 
 
 struct YAJLFrameHeaderSpec {
-    uint8_t component_id;
-    uint8_t horizontal_sampling_factor;
-    uint8_t vertical_sampling_factor;
-    uint8_t qtable_dest;
+    u8 component_id;
+    u8 horizontal_sampling_factor;
+    u8 vertical_sampling_factor;
+    u8 qtable_dest;
 
     YAJLFrameHeaderSpec() {
         // empty-constructor
@@ -22,29 +24,25 @@ struct YAJLFrameHeaderSpec {
     YAJLFrameHeaderSpec(bitio::bitio_stream *bstream);
 };
 
-struct YAJLFrameHeaderData {
-    uint16_t sof;
-    uint8_t precision;
-    uint16_t nlines;
-    uint16_t nsamples_per_line;
-    uint8_t ncomponents;
+struct YAJLFrameHeader {
+    u16 sof;
+    u8 precision;
+    u16 nlines;
+    u16 nsamples_per_line;
+    u8 ncomponents;
+    std::vector<YAJLFrameHeaderSpec> specs;
 
-    YAJLFrameHeaderData() {
+    YAJLFrameHeader() {
         // empty-constructor
     }
 
-    YAJLFrameHeaderData(uint16_t marker, bitio::bitio_stream *bstream);
-};
-
-struct YAJLFrameHeader {
-    YAJLFrameHeaderData data;
-    std::vector<YAJLFrameHeaderSpec> specs;
+    YAJLFrameHeader(u16 marker, bitio::bitio_stream *bstream);
 };
 
 struct YAJLScanHeaderSpec {
-    uint8_t component_selector;
-    uint8_t dc_selector;
-    uint8_t ac_selector;
+    u8 component_selector;
+    u8 dc_selector;
+    u8 ac_selector;
 
     YAJLScanHeaderSpec() {
         // empty-constructor
@@ -54,12 +52,12 @@ struct YAJLScanHeaderSpec {
 };
 
 struct YAJLScanHeader {
-    uint8_t ncomponents;
+    u8 ncomponents;
     std::vector<YAJLScanHeaderSpec> specs;
-    uint8_t select_start;
-    uint8_t select_end;
-    uint8_t ah;
-    uint8_t al;
+    u8 select_start;
+    u8 select_end;
+    u8 ah;
+    u8 al;
 
     YAJLScanHeader() {
         // empty-constructor
@@ -67,5 +65,31 @@ struct YAJLScanHeader {
 
     YAJLScanHeader(bitio::bitio_stream *bstream);
 };
+
+struct YAJLScan {
+    YAJLTables tables;
+    YAJLScanHeader header;
+    //todo: add ECS.
+
+    YAJLScan() {
+        // empty-constructor
+    }
+
+    YAJLScan(YAJLMiscData *misc, bitio::bitio_stream *bstream);
+};
+
+struct YAJLFrame {
+    YAJLMiscData *misc;
+    YAJLTables tables;
+    YAJLFrameHeader header;
+    std::vector<YAJLScan> scans;
+
+    YAJLFrame() {
+        // empty-constructor
+    }
+
+    YAJLFrame(YAJLMiscData *_misc, bitio::bitio_stream *bstream);
+};
+
 
 #endif
