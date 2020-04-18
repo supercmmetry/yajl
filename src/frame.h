@@ -79,7 +79,6 @@ struct YAJLScan {
 };
 
 struct YAJLFrame {
-    YAJLMiscData *misc;
     YAJLTables tables;
     YAJLFrameHeader header;
     std::vector<YAJLScan> scans;
@@ -88,7 +87,7 @@ struct YAJLFrame {
         // empty-constructor
     }
 
-    YAJLFrame(YAJLMiscData *_misc, bitio::bitio_stream *bstream);
+    YAJLFrame(YAJLMiscData *misc, bitio::bitio_stream *bstream);
 };
 
 

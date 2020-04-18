@@ -1,6 +1,8 @@
 #include "qtable.h"
+#include "htables.h"
 
 YAJLQTable::YAJLQTable(bitio::bitio_stream *bstream) {
+    coeffs = new u16[0x40];
     precision = bstream->read(0x4);
     dest_id = bstream->read(0x4);
     uint8_t qk_size = precision == 0 ? 8 : 16;

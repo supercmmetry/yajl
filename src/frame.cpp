@@ -74,8 +74,7 @@ YAJLScan::YAJLScan(YAJLMiscData *misc, bitio::bitio_stream *bstream) {
     }
 }
 
-YAJLFrame::YAJLFrame(YAJLMiscData *_misc, bitio::bitio_stream *bstream) {
-    misc = _misc;
+YAJLFrame::YAJLFrame(YAJLMiscData *misc, bitio::bitio_stream *bstream) {
     bool run = true;
     while (run) {
         u16 marker = bstream->read(0x10);
@@ -95,6 +94,7 @@ YAJLFrame::YAJLFrame(YAJLMiscData *_misc, bitio::bitio_stream *bstream) {
         } else if (markers::is_sof_marker(marker)) {
             header = YAJLFrameHeader(marker, bstream);
             // now we parse one Scan
+
             scans.emplace_back(misc, bstream);
 #ifdef DEBUG
             printf("Run completed at: %s for 'Frame'\n", __FILE__);

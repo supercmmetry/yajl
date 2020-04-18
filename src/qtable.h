@@ -3,12 +3,13 @@
 
 #include <cstdint>
 #include <bitio/bitio.h>
-#include "htables.h"
+#include "types.h"
+
 
 struct YAJLQTable {
-    uint16_t coeffs[64];
-    uint8_t precision;
-    uint8_t dest_id;
+    u16 *coeffs;
+    u8 precision;
+    u8 dest_id;
 
     YAJLQTable() {
         // empty-constructor

@@ -24,8 +24,7 @@ void YAJLImage::scan_markers() {
 }
 
 
-YAJLImage::YAJLImage(bool
-                     _use_minimal_scan) {
+YAJLImage::YAJLImage(bool _use_minimal_scan) {
     bstream = nullptr;
-    use_minimal_scan = _use_minimal_scan;
+    misc.ignore = _use_minimal_scan;
 }
