@@ -1,7 +1,6 @@
 #ifndef YAJL_ENTROPY_TABLES_H
 #define YAJL_ENTROPY_TABLES_H
 
-
 #include <cstdlib>
 #include <bitio/bitio.h>
 #include "markers.h"
@@ -18,6 +17,24 @@ struct YAJLHuffmanTable {
     }
 
     YAJLHuffmanTable(bitio::bitio_stream *bstream);
+};
+
+class YAJLHuffmanTree {
+private:
+    struct HFNode {
+        HFNode *left;
+        HFNode *right;
+        u8 symbol;
+    };
+
+    HFNode *root;
+
+public:
+    YAJLHuffmanTree() {
+        // empty-constructor
+    }
+
+    YAJLHuffmanTree(YAJLHuffmanTable *table);
 };
 
 struct YAJLArithmeticTable {
