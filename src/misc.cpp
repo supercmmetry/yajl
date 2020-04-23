@@ -92,7 +92,9 @@ void YAJLTables::fetch_etable(u16 marker, bitio::bitio_stream *bstream) {
             }
 
             assert(etable.huffman_table->table_dest < 4);
-            etables[etable.huffman_table->table_dest] = etable;
+            assert(etable.huffman_table->table_class < 2);
+
+            etables[etable.huffman_table->table_dest][etable.huffman_table->table_class] = etable;
         }
     } else if (marker == markers::DAC) {
         while (length > 0) {
@@ -101,7 +103,8 @@ void YAJLTables::fetch_etable(u16 marker, bitio::bitio_stream *bstream) {
             etable.arithmetic_table = new YAJLArithmeticTable(bstream);
 
             assert(etable.arithmetic_table->table_dest < 4);
-            etables[etable.arithmetic_table->table_dest] = etable;
+            assert(etable.arithmetic_table->table_class < 2);
+            etables[etable.arithmetic_table->table_dest][etable.arithmetic_table->table_class] = etable;
             length -= 2;
         }
     } else {

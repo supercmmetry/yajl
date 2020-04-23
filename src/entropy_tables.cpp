@@ -22,23 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <cassert>
 #include "entropy_tables.h"
 
 YAJLHuffmanTable::YAJLHuffmanTable(bitio::bitio_stream *bstream) {
+    this->bstream = bstream;
     table_class = bstream->read(0x4);
     table_dest = bstream->read(0x4);
+
     for (int i = 0; i < 16; i++) {
         ncodes[i] = bstream->read(0x8);
     }
 
-    for (int i = 0; i < 16; i++) {
-        var_codes[i] = new u8[ncodes[i]];
-        for (int j = 0; j < ncodes[i]; j++) {
-            var_codes[i][j] = bstream->read(0x8);
-        }
-    }
+    decode_table();
+}
 
-    auto tree = YAJLHuffmanTree(this);
+void YAJLHuffmanTable::decode_table() {
+    tree = new YAJLHuffmanTable::YAJLHuffmanTree(this, bstream);
+}
+
+u8 YAJLHuffmanTable::decode() {
+    assert(tree != nullptr);
+    return tree->decode(bstream);
 }
 
 
@@ -48,92 +53,44 @@ YAJLArithmeticTable::YAJLArithmeticTable(bitio::bitio_stream *bstream) {
     cs_value = bstream->read(0x8);
 }
 
-YAJLHuffmanTree::YAJLHuffmanTree(YAJLHuffmanTable *table) {
-    // first we create HUFFSIZE. refer Figure C.1 from ISO 10918
-    // since dct-coefficients are scaled to 1-byte, max(K) = 255
-    u8 *huffsize = new u8[0x101];
-    u16 k = 0;
-    u8 i = 1;
-    u8 j = 1;
-    u16 lastk = 0;
-    while (true) {
-        if (j > table->ncodes[i-1]) {
-            i++;
-            j = 1;
-            if (i > 16) {
-                huffsize[k] = 0;
-                lastk = k;
-                break;
-            }
-        } else {
-            huffsize[k] = i;
-            k++;
-            j++;
-            continue;
-        }
+YAJLHuffmanTable::YAJLHuffmanTree::YAJLHuffmanTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream) {
+    if (table == nullptr) {
+        return;
     }
 
-    // now we create HUFFCODE
-    u16 *huffcode = new u16[0x101];
-    k = 0;
-    u16 code = 0;
-    u8 si = huffsize[0];
+    auto ncodes = table->ncodes;
+    u8 *var_codes[16];
 
-    start:
-    huffcode[k] = code;
-    code++;
-    k++;
 
-    if (huffsize[k] == si) {
-        goto start;
-    } else {
-        if (huffsize[k] == 0) {
-            goto end;
-        } else {
-            shift_point:
-            code <<= 1;
-            si++;
-
-            if (huffsize[k] == si) {
-                goto start;
-            } else {
-                goto shift_point;
-            }
-        }
-    }
-
-    end:;
-
-    // construct huffval list
-    u8 *huffval = new u8[0x101];
-    k = 0;
     for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < table->ncodes[i]; j++) {
-            huffval[k++] = table->var_codes[i][j];
+        var_codes[i] = new u8[ncodes[i]];
+        for (int j = 0; j < ncodes[i]; j++) {
+            var_codes[i][j] = bstream->read(0x8);
         }
     }
 
-    // now we order the codes according to symbols.
-    k = 0;
-    u16 *ehufco = new u16[0x101];
-    u8 *ehufsi = new u8[0x101];
-    while (k < lastk) {
-        i = huffval[k];
-        ehufco[i] = huffcode[k];
-        ehufsi[i] = huffsize[k];
-        k++;
+    auto *ehufsi = new u8[0x100];
+    auto *ehufco = new u16[0x100];
+
+    u16 code = 0;
+    u32 count = 0;
+    for (int i = 0; i < 16; i++) {
+        auto in_count = 0;
+        for (int j = 0; j < ncodes[i]; j++) {
+            ehufco[var_codes[i][in_count]] = code++;
+            ehufsi[var_codes[i][in_count]] = i;
+            in_count++;
+            count++;
+        }
+        code <<= 1;
     }
-
-    delete [] huffcode;
-    delete [] huffsize;
-
 
 
     // now we construct the huffman tree.
     root = new HFNode;
 
     for (int i = 0; i < 0x100; i++) {
-        int j = ehufsi[i] - 1;
+        int j = ehufsi[i];
         u16 code = ehufco[i];
         HFNode *curr = root;
         while (j >= 0) {
@@ -155,4 +112,53 @@ YAJLHuffmanTree::YAJLHuffmanTree(YAJLHuffmanTable *table) {
             curr->symbol = i;
         }
     }
+
+    free(ehufsi);
+    free(ehufco);
+
+    for (int i = 0; i < 0x10; i++) {
+        free(var_codes[i]);
+    }
 }
+
+u8 YAJLHuffmanTable::YAJLHuffmanTree::decode(bitio::bitio_stream *bstream) {
+    auto *curr = root;
+    while (curr->left != nullptr && curr->right != nullptr) {
+        bool msb = bstream->read(0x1);
+        if (msb) {
+            curr = curr->right;
+        } else {
+            curr = curr->left;
+        }
+    }
+    return curr->symbol;
+}
+
+void YAJLHuffmanTable::YAJLHuffmanTree::free_hfnode(YAJLHuffmanTable::YAJLHuffmanTree::HFNode *node) {
+    if (node == nullptr) {
+        return;
+    }
+    free_hfnode(node->left);
+    free_hfnode(node->right);
+    free(node);
+}
+
+
+void YAJLEntropyTable::set_marker(u16 _marker) {
+    marker = _marker;
+    if (marker == markers::DAC && huffman_table != nullptr) {
+        free(huffman_table);
+    }
+    if (marker == markers::DHT && arithmetic_table != nullptr) {
+        free(arithmetic_table);
+    }
+}
+
+u8 YAJLEntropyTable::decode() {
+    if (marker == markers::DHT && huffman_table != nullptr) {
+        return huffman_table->decode();
+    } else if (marker == markers::DAC && arithmetic_table != nullptr) {
+        //todo: implement decode_table for arithmetic tables.
+    }
+}
+

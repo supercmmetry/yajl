@@ -6,36 +6,55 @@
 #include "markers.h"
 #include "types.h"
 
-struct YAJLHuffmanTable {
+
+class YAJLHuffmanTable {
+private:
+    bitio::bitio_stream *bstream;
+
+    void decode_table();
+
+public:
+    class YAJLHuffmanTree {
+    private:
+        struct HFNode {
+            HFNode *left;
+            HFNode *right;
+            u8 symbol;
+        };
+
+        HFNode *root;
+
+        void free_hfnode(HFNode *node);
+
+    public:
+        YAJLHuffmanTree() {
+            // empty-constructor
+        }
+
+        ~YAJLHuffmanTree() {
+            // de-allocate huffman tree.
+            free_hfnode(root);
+        }
+
+        YAJLHuffmanTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream);
+
+        u8 decode(bitio::bitio_stream *bstream);
+    };
+
     u8 table_class;
     u8 table_dest;
     u8 ncodes[16];
-    u8 *var_codes[16];
+    YAJLHuffmanTree *tree = nullptr;
 
     YAJLHuffmanTable() {
         // empty-constructor
     }
 
     YAJLHuffmanTable(bitio::bitio_stream *bstream);
+
+    u8 decode();
 };
 
-class YAJLHuffmanTree {
-private:
-    struct HFNode {
-        HFNode *left;
-        HFNode *right;
-        u8 symbol;
-    };
-
-    HFNode *root;
-
-public:
-    YAJLHuffmanTree() {
-        // empty-constructor
-    }
-
-    YAJLHuffmanTree(YAJLHuffmanTable *table);
-};
 
 struct YAJLArithmeticTable {
     u8 table_class;
@@ -54,17 +73,10 @@ struct YAJLEntropyTable {
     YAJLHuffmanTable *huffman_table = nullptr;
     YAJLArithmeticTable *arithmetic_table = nullptr;
 
-    void set_marker(u16 _marker) {
-        marker = _marker;
-        if (marker == markers::DAC && huffman_table != nullptr) {
-            free(huffman_table);
-        }
-        if (marker == markers::DHT && arithmetic_table != nullptr) {
-            free(arithmetic_table);
-        }
-    }
-};
+    void set_marker(u16 _marker);
 
+    u8 decode();
+};
 
 
 #endif

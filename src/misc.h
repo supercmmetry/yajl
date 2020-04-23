@@ -18,7 +18,7 @@ struct YAJLMiscData {
 
 struct YAJLTables {
     YAJLQTable qtables[4];
-    YAJLEntropyTable etables[4];
+    YAJLEntropyTable etables[4][2];
 
     void fetch_qtable(bitio::bitio_stream *bstream);
     void fetch_etable(u16 marker, bitio::bitio_stream *bstream);

@@ -87,6 +87,23 @@ YAJLScan::YAJLScan(YAJLMiscData *misc, bitio::bitio_stream *bstream) {
         } else if (marker == markers::SOS) {
             header = YAJLScanHeader(bstream);
             // scan for MCUs here
+            // if Ns > 1, then the MCUs are interleaved. refer B.2.3 from ISO 10918
+            // the interleaved components are ordered in this fashion: Cs1, Cs2 ... Csj
+
+
+            // todo: handle interleaving.
+            if (header.ncomponents > 1) {
+                for (int i = 0; i <= 3 * (header.select_end - header.select_start); i++) {
+                    if ((i % 8) == 0) {
+                        std::cout << std::endl;
+                    }
+
+                    auto etable = tables.etables[header.specs[0].dc_selector][0];
+                    std::cout << (int) etable.decode() << " ";
+
+                }
+            }
+
 #ifdef DEBUG
             printf("Run completed at: %s for 'Scan'\n", __FILE__);
 #endif
