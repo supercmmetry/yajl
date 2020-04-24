@@ -86,6 +86,7 @@ namespace bitio {
 
         inline void wflush();
 
+        inline void lim_skip(uint8_t n);
 
     public:
 
@@ -93,7 +94,9 @@ namespace bitio {
 
         void skip(uint64_t n);
 
-        uint64_t read(uint64_t n);
+        void seek(int64_t n);
+
+        uint64_t read(uint8_t n);
 
         void write(uint64_t obj, uint64_t n);
 

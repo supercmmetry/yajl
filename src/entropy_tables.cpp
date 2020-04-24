@@ -38,7 +38,7 @@ YAJLHuffmanTable::YAJLHuffmanTable(bitio::bitio_stream *bstream) {
 }
 
 void YAJLHuffmanTable::decode_table() {
-    tree = new YAJLHuffmanTable::YAJLHuffmanTree(this, bstream);
+    tree = new YAJLHuffmanTable::HFTree(this, bstream);
 }
 
 u8 YAJLHuffmanTable::decode() {
@@ -53,7 +53,7 @@ YAJLArithmeticTable::YAJLArithmeticTable(bitio::bitio_stream *bstream) {
     cs_value = bstream->read(0x8);
 }
 
-YAJLHuffmanTable::YAJLHuffmanTree::YAJLHuffmanTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream) {
+YAJLHuffmanTable::HFTree::HFTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream) {
     if (table == nullptr) {
         return;
     }
@@ -121,7 +121,7 @@ YAJLHuffmanTable::YAJLHuffmanTree::YAJLHuffmanTree(YAJLHuffmanTable *table, biti
     }
 }
 
-u8 YAJLHuffmanTable::YAJLHuffmanTree::decode(bitio::bitio_stream *bstream) {
+u8 YAJLHuffmanTable::HFTree::decode(bitio::bitio_stream *bstream) {
     auto *curr = root;
     while (curr->left != nullptr && curr->right != nullptr) {
         bool msb = bstream->read(0x1);
@@ -134,7 +134,7 @@ u8 YAJLHuffmanTable::YAJLHuffmanTree::decode(bitio::bitio_stream *bstream) {
     return curr->symbol;
 }
 
-void YAJLHuffmanTable::YAJLHuffmanTree::free_hfnode(YAJLHuffmanTable::YAJLHuffmanTree::HFNode *node) {
+void YAJLHuffmanTable::HFTree::free_hfnode(YAJLHuffmanTable::HFTree::HFNode *node) {
     if (node == nullptr) {
         return;
     }

@@ -6,7 +6,6 @@
 #include "markers.h"
 #include "types.h"
 
-
 class YAJLHuffmanTable {
 private:
     bitio::bitio_stream *bstream;
@@ -14,7 +13,7 @@ private:
     void decode_table();
 
 public:
-    class YAJLHuffmanTree {
+    class HFTree {
     private:
         struct HFNode {
             HFNode *left;
@@ -27,16 +26,16 @@ public:
         void free_hfnode(HFNode *node);
 
     public:
-        YAJLHuffmanTree() {
+        HFTree() {
             // empty-constructor
         }
 
-        ~YAJLHuffmanTree() {
+        ~HFTree() {
             // de-allocate huffman tree.
             free_hfnode(root);
         }
 
-        YAJLHuffmanTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream);
+        HFTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream);
 
         u8 decode(bitio::bitio_stream *bstream);
     };
@@ -44,7 +43,7 @@ public:
     u8 table_class;
     u8 table_dest;
     u8 ncodes[16];
-    YAJLHuffmanTree *tree = nullptr;
+    HFTree *tree = nullptr;
 
     YAJLHuffmanTable() {
         // empty-constructor
@@ -54,7 +53,6 @@ public:
 
     u8 decode();
 };
-
 
 struct YAJLArithmeticTable {
     u8 table_class;

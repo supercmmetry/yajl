@@ -90,7 +90,6 @@ YAJLScan::YAJLScan(YAJLMiscData *misc, bitio::bitio_stream *bstream) {
             // if Ns > 1, then the MCUs are interleaved. refer B.2.3 from ISO 10918
             // the interleaved components are ordered in this fashion: Cs1, Cs2 ... Csj
 
-
             // todo: handle interleaving.
             if (header.ncomponents > 1) {
                 for (int i = 0; i <= 3 * (header.select_end - header.select_start); i++) {

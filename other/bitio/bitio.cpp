@@ -56,8 +56,9 @@ void bitio_stream::close() {
 }
 
 inline void bitio_stream::load_buffer() {
-    current_buffer_length = fread(byte_buffer, 1, buffer_size, file);
-    eof = current_buffer_length == 0;
+    auto tmp_len = fread(byte_buffer, 1, buffer_size, file);
+    current_buffer_length = tmp_len != 0 ? tmp_len : current_buffer_length;
+    eof = tmp_len == 0;
     byte_index = 0;
 }
 
@@ -73,7 +74,8 @@ inline void bitio_stream::wflush() {
     fwrite(byte_buffer, 1, buffer_size, file);
 }
 
-uint64_t bitio_stream::read(uint64_t n) {
+uint64_t bitio_stream::read(uint8_t n) {
+
     uint64_t value = 0;
     if (bit_count == 0) {
         load_byte();
@@ -109,13 +111,50 @@ uint64_t bitio_stream::read(uint64_t n) {
     return value & ui64_masks[n];
 }
 
+void bitio_stream::seek(int64_t n) {
+    if (n == 0) return;
+    if (n > 0) {
+        skip(n);
+    } else {
+        n = -n;
+        uint64_t nbytes = n >> 3;
+        uint8_t resbits = n & 0x7;
+        if (nbytes < byte_index) {
+            int64_t fwd_offset = byte_index - nbytes;
+            byte_index = fwd_offset;
+            fseek(file, fwd_offset-(int64_t) current_buffer_length, SEEK_CUR);
+            if (resbits > 0) {
+                fseek(file, -1, SEEK_CUR);
+                load_buffer();
+                lim_skip(8-resbits);
+            } else {
+                load_buffer();
+            }
+        } else {
+            fseek(file, -(int64_t) current_buffer_length, SEEK_CUR);
+            nbytes -= byte_index;
+            fseek(file, -nbytes, SEEK_CUR);
+            if (resbits > 0) {
+                fseek(file, -1, SEEK_CUR);
+                load_buffer();
+                lim_skip(8-resbits);
+            } else {
+                load_buffer();
+            }
+        }
+
+    }
+
+}
+
+// wrapper for lim_ski[ to allow skips beyond 64-bits.
 void bitio_stream::skip(uint64_t n) {
     while (n > 0) {
         if (n > 0x40) {
-            read(0x40);
+            lim_skip(0x40);
             n -= 0x40;
         } else {
-            read(n);
+            lim_skip(n);
             n = 0;
         }
     }
@@ -181,6 +220,36 @@ uint64_t bitio_stream::get_file_size() {
     fclose(tmp);
     return count;
 }
+
+inline void bitio_stream::lim_skip(uint8_t n) {
+    if (bit_count == 0) {
+        load_byte();
+        bit_count = 8;
+    }
+
+    if (bit_count >= n) {
+        bit_buffer <<= n;
+        bit_count -= n;
+    } else {
+        char target_bits = n - bit_count;
+        char nbytes = target_bits >> 3;
+        bit_buffer = 0;
+        bit_count = 0;
+
+        while (nbytes--) {
+            load_byte();
+        }
+        load_byte();
+        bit_count = 8;
+
+        char rembits = target_bits & bit_masks[3];
+        bit_buffer <<= rembits;
+        bit_count -= rembits;
+    }
+}
+
+
+
 
 
 
