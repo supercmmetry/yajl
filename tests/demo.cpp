@@ -5,18 +5,18 @@
 
 int main() {
     std::string filename = "/home/supercmmetry/Pictures/supercmmetry.jpg";
-    bitio::bitio_stream bstream(filename, bitio::READ, 1);
+    bitio::bitio_stream bstream(filename, bitio::READ, 10);
 
-
+//    bstream.seek(0xC);
     std::cout << bstream.read(0x10) << std::endl;
 
     bstream.seek(0x1);
-    bstream.seek(-0x8);
-    bstream.seek(0x8);
+    bstream.seek(-0x1);
+    bstream.seek(0x10);
+    bstream.seek(-0x10);
     bstream.seek(0x123);
     bstream.seek(-0x123);
-    bstream.seek(-0x11);
-
+    bstream.seek(-0x10);
 
 
     std::cout << bstream.read(0x10) << std::endl;
