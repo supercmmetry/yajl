@@ -121,36 +121,33 @@ void bitio_stream::seek(int64_t n) {
         uint8_t resbits = n & 0x7;
         if (bit_count == 0) {
             load_byte();
+            bit_count = 8;
         }
         if (nbytes < byte_index) {
             int64_t fwd_offset = byte_index - nbytes - 1;
             byte_index = fwd_offset + 1;
-            fseek(file, fwd_offset-(int64_t) current_buffer_length, SEEK_CUR);
-            if (resbits > 0) {
-                fseek(file, -1, SEEK_CUR);
-                load_buffer();
-                load_byte();
-                byte_index--;
-                bit_buffer <<= 8 - bit_count;
-                lim_skip(8-resbits);
-            } else {
-                load_buffer();
-            }
+            fseek(file, fwd_offset - (int64_t) current_buffer_length, SEEK_CUR);
         } else {
             fseek(file, -(int64_t) current_buffer_length, SEEK_CUR);
             nbytes -= byte_index;
             fseek(file, -nbytes, SEEK_CUR);
-            if (resbits > 0) {
+        }
+        if (resbits > 0) {
+            if (8-bit_count < resbits) {
                 fseek(file, -1, SEEK_CUR);
                 load_buffer();
-                load_byte();
-                byte_index--;
+                bit_buffer = byte_buffer[byte_index++];
                 bit_buffer <<= 8 - bit_count;
-                lim_skip(8-resbits);
+                lim_skip(8 - resbits);
             } else {
-                load_buffer();
+                bit_buffer = byte_buffer[byte_index-1];
+                bit_count += resbits;
+                bit_buffer <<= 8 - bit_count;
             }
+        } else {
+            load_buffer();
         }
+
 
     }
 
