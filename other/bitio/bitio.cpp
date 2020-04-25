@@ -119,6 +119,9 @@ void bitio_stream::seek(int64_t n) {
         n = -n;
         uint64_t nbytes = n >> 3;
         uint8_t resbits = n & 0x7;
+        if (bit_count == 0) {
+            load_byte();
+        }
         if (nbytes < byte_index) {
             int64_t fwd_offset = byte_index - nbytes - 1;
             byte_index = fwd_offset + 1;

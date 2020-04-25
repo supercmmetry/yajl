@@ -5,6 +5,15 @@
 
 int main() {
     std::string filename = "/home/supercmmetry/Pictures/supercmmetry.jpg";
+    bitio::bitio_stream bstream(filename, bitio::READ, 1);
+    bstream.seek(0xC);
+    std::cout << bstream.read(0x4) << std::endl;
+    bstream.seek(-0x4);
+    bstream.seek(0x8);
+    bstream.seek(-0x8);
+    bstream.seek(0x123);
+    bstream.seek(-0x123);
+    std::cout << bstream.read(0x4) << std::endl;
 
     YAJLImage image(false);
     image.set_src(filename);
