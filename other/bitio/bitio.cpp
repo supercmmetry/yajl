@@ -146,11 +146,10 @@ void bitio_stream::seek(int64_t n) {
             }
         } else {
             load_buffer();
+            bit_buffer = byte_buffer[byte_index++];
+            bit_buffer <<= 8 - bit_count;
         }
-
-
     }
-
 }
 
 // wrapper for lim_skip to allow skips beyond 64-bits.

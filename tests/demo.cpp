@@ -9,9 +9,11 @@ int main() {
 
 
     std::cout << bstream.read(0x4) << std::endl;
-    bstream.seek(-0x4);
+    bstream.seek(0x123);
+    bstream.seek(-0x123);
     bstream.seek(1);
     bstream.seek(-1);
+    bstream.seek(-0x8);
 
 
     std::cout << bstream.read(0x4) << std::endl;
