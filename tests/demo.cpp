@@ -8,15 +8,18 @@ int main() {
     bitio::bitio_stream bstream(filename, bitio::READ, 1);
 
 
-    std::cout << bstream.read(0x4) << std::endl;
+    std::cout << bstream.read(0x10) << std::endl;
+
+    bstream.seek(0x1);
+    bstream.seek(-0x8);
+    bstream.seek(0x8);
     bstream.seek(0x123);
     bstream.seek(-0x123);
-    bstream.seek(1);
-    bstream.seek(-1);
-    bstream.seek(-0x8);
+    bstream.seek(-0x11);
 
 
-    std::cout << bstream.read(0x4) << std::endl;
+
+    std::cout << bstream.read(0x10) << std::endl;
 
 //    YAJLImage image(false);
 //    image.set_src(filename);

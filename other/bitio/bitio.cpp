@@ -75,7 +75,6 @@ inline void bitio_stream::wflush() {
 }
 
 uint64_t bitio_stream::read(uint8_t n) {
-
     uint64_t value = 0;
     if (bit_count == 0) {
         load_byte();
@@ -116,40 +115,40 @@ void bitio_stream::seek(int64_t n) {
     if (n > 0) {
         skip(n);
     } else {
-        n = -n;
-        uint64_t nbytes = n >> 3;
-        uint8_t resbits = n & 0x7;
-        if (bit_count == 0) {
-            load_byte();
-            bit_count = 8;
-        }
-        if (nbytes < byte_index) {
-            int64_t fwd_offset = byte_index - nbytes - 1;
-            byte_index = fwd_offset + 1;
-            fseek(file, fwd_offset - (int64_t) current_buffer_length, SEEK_CUR);
+        auto nbits = -n;
+        auto nbytes = nbits >> 0x3;
+        auto rbits = nbits & 0x7;
+
+        fseek(file, (int64_t) byte_index - (int64_t) current_buffer_length, SEEK_CUR);
+        nbytes -= byte_index-1;
+
+        fseek(file, -1-nbytes, SEEK_CUR);
+
+        load_buffer();
+        bit_buffer = byte_buffer[byte_index++];
+        bit_buffer <<= 8 - bit_count;
+
+        if (rbits <= 8 - bit_count) {
+            bit_count += rbits;
+            bit_buffer = byte_buffer[byte_index - 1];
+            bit_buffer <<= 8 - bit_count;
         } else {
-            fseek(file, -(int64_t) current_buffer_length, SEEK_CUR);
-            nbytes -= byte_index;
-            fseek(file, -nbytes, SEEK_CUR);
-        }
-        if (resbits > 0) {
-            if (8-bit_count < resbits) {
-                fseek(file, -1, SEEK_CUR);
+            bit_buffer = byte_buffer[--byte_index];
+            bit_buffer <<= 8 - bit_count;
+
+            if (byte_index == 0) {
+                fseek(file, -1-(int64_t) current_buffer_length, SEEK_CUR);
                 load_buffer();
+                byte_index = current_buffer_length - 1;
                 bit_buffer = byte_buffer[byte_index++];
                 bit_buffer <<= 8 - bit_count;
-                lim_skip(8 - resbits);
-            } else {
-                bit_buffer = byte_buffer[byte_index-1];
-                bit_count += resbits;
-                bit_buffer <<= 8 - bit_count;
             }
-        } else {
-            load_buffer();
-            bit_buffer = byte_buffer[byte_index++];
-            bit_buffer <<= 8 - bit_count;
+
+            lim_skip(8 - rbits);
         }
+
     }
+    printf("");
 }
 
 // wrapper for lim_skip to allow skips beyond 64-bits.
