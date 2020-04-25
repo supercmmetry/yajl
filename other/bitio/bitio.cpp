@@ -125,8 +125,7 @@ void bitio_stream::seek(int64_t n) {
         fseek(file, al_offset, SEEK_CUR);
 
         load_buffer();
-        bit_buffer = byte_buffer[byte_index++];
-        bit_buffer <<= 8 - bit_count;
+        byte_index++;
 
         if (rbits <= 8 - bit_count) {
             bit_count += rbits;
