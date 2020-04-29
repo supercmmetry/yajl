@@ -16,14 +16,18 @@ public:
     class HFTree {
     private:
         struct HFNode {
-            HFNode *left;
-            HFNode *right;
-            u8 symbol;
+            HFNode *left = nullptr;
+            HFNode *right = nullptr;
+            u8 symbol{};
         };
 
-        HFNode *root;
+        HFNode *root = nullptr;
+        bool marker_found = false;
+        bool count_bstuff = false;
+        uint8_t bstuff_count = 0;
 
         void free_hfnode(HFNode *node);
+        inline void insert(u16 code, u8 code_lensh, u8 symbol);
 
     public:
         HFTree() {
@@ -37,7 +41,7 @@ public:
 
         HFTree(YAJLHuffmanTable *table, bitio::bitio_stream *bstream);
 
-        u8 decode(bitio::bitio_stream *bstream);
+        u16 decode(bitio::bitio_stream *bstream);
     };
 
     u8 table_class;
@@ -51,7 +55,7 @@ public:
 
     YAJLHuffmanTable(bitio::bitio_stream *bstream);
 
-    u8 decode();
+    u16 decode();
 };
 
 struct YAJLArithmeticTable {
@@ -73,7 +77,7 @@ struct YAJLEntropyTable {
 
     void set_marker(u16 _marker);
 
-    u8 decode();
+    u16 decode();
 };
 
 

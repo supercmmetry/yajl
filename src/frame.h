@@ -5,10 +5,10 @@
 #include <vector>
 #include <bitio/bitio.h>
 #include "qtable.h"
+#include "htables.h"
 #include "entropy_tables.h"
 #include "types.h"
 #include "misc.h"
-
 
 
 struct YAJLFrameHeaderSpec {
@@ -67,15 +67,34 @@ struct YAJLScanHeader {
 };
 
 struct YAJLScan {
+public:
+    struct MCU {
+    private:
+        inline i16 extract_xv(bitio::bitio_stream *bstream, u8 ebits);
+
+        inline i16 fill_xac(bitio::bitio_stream *bstream, YAJLEntropyTable *table);
+
+    public:
+        u8 component_id{};
+        i16 xcof[0x40] = {0};
+
+        MCU() {
+            // empty-constructor.
+        }
+
+        MCU(bitio::bitio_stream *bstream, YAJLTables *tables, YAJLScanHeaderSpec *spec);
+
+    };
+
     YAJLTables tables;
     YAJLScanHeader header;
-    //todo: add ECS.
+    std::vector<MCU> mcus;
 
     YAJLScan() {
         // empty-constructor
     }
 
-    YAJLScan(YAJLMiscData *misc, bitio::bitio_stream *bstream);
+    YAJLScan(YAJLMiscData *misc, YAJLFrameHeader *fheader, bitio::bitio_stream *bstream);
 };
 
 struct YAJLFrame {

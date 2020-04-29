@@ -75,6 +75,10 @@ inline void bitio_stream::wflush() {
 }
 
 uint64_t bitio_stream::read(uint8_t n) {
+    if (n == 0) {
+        return 0;
+    }
+
     uint64_t value = 0;
     if (bit_count == 0) {
         load_byte();
@@ -146,7 +150,6 @@ void bitio_stream::seek(int64_t n) {
         }
 
     }
-    printf("");
 }
 
 // wrapper for lim_skip to allow skips beyond 64-bits.
@@ -186,7 +189,7 @@ void bitio_stream::write(uint64_t obj, uint64_t n) {
 
 // aligns to next-byte, meaningful only for read operations.
 void bitio_stream::align() {
-    read(bit_count);
+    lim_skip(bit_count);
     //load_byte();
 }
 
@@ -247,6 +250,20 @@ inline void bitio_stream::lim_skip(uint8_t n) {
         char rembits = target_bits & bit_masks[3];
         bit_buffer <<= rembits;
         bit_count -= rembits;
+    }
+}
+
+uint64_t bitio_stream::peek(uint8_t n) {
+    uint64_t peek_val = read(n);
+    seek(-n);
+    return peek_val;
+}
+
+void bitio_stream::force_align() {
+    if (bit_count == 0) {
+        lim_skip(0x8);
+    } else {
+        lim_skip(bit_count);
     }
 }
 
